@@ -274,7 +274,7 @@
       const container = document.getElementById("haberler");
       container.innerHTML = "";
 
-      data.slice(0, 3).forEach(haber => {
+      data.slice(0, 5).forEach(haber => {
         container.innerHTML += `
           <div class="flex space-x-4">
             ${haber.image ? `<img src="${haber.image}" alt="Haber görseli" class="rounded-lg w-20 h-20 object-cover" />` : ''}
