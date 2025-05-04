@@ -310,30 +310,27 @@ document.getElementById("weather-card-link").href =
     });
   }
 
-  function getLocationAndWeather() {
+function getLocationAndWeather() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       pos => {
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
         getWeather(lat, lon);
-        // 🌐 Bağlantıyı detay sayfasına güncelle
-        document.getElementById("weather-card-link").href = `detay.html?lat=${lat}&lon=${lon}`;
       },
       () => {
         const lat = 39.9208;
         const lon = 32.8541;
         getWeather(lat, lon, "Ankara");
-        document.getElementById("weather-card-link").href = `detay.html?lat=${lat}&lon=${lon}`;
       }
     );
   } else {
     const lat = 39.9208;
     const lon = 32.8541;
     getWeather(lat, lon, "Ankara");
-    document.getElementById("weather-card-link").href = `detay.html?lat=${lat}&lon=${lon}`;
   }
 }
+
 
 </script>
 
