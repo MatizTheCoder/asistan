@@ -76,6 +76,7 @@
   </div> -->
 
   <!-- Hava Durumu -->
+  <a id="weather-card-link" href="#" class="block">
   <section class="bg-blue-100 dark:bg-blue-900 rounded-xl p-4 shadow">
     <div class="flex justify-between items-center mb-2">
       <h2 class="text-xl font-bold flex items-center space-x-2 dark:text-white">
@@ -86,6 +87,7 @@
     </div>
     <div id="hourly-forecast" class="mt-4 grid grid-cols-5 gap-2 text-xs text-center"></div>
   </section>
+  </a>
 
   <!-- Döviz Kurları -->
   <section class="bg-yellow-100 dark:bg-gray-700 rounded-xl p-4 shadow">
@@ -190,6 +192,11 @@
     } catch (err) {
       console.error("Hava durumu alınamadı:", err);
     }
+
+    // Şehir adı boş değilse detay sayfası linkine koordinatları ekleyelim
+document.getElementById("weather-card-link").href =
+  `detay.html?lat=${lat}&lon=${lon}&city=${encodeURIComponent(cityName)}`;
+
   }
 
   async function getHourlyForecast(lat, lon) {
