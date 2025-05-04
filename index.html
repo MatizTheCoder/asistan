@@ -1,5 +1,60 @@
-<!-- Hava Durumu -->
-<a id="weather-card-link" href="#" class="block">
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Türkiye Gündemi</title>
+
+  <!-- Tema tercihine göre dark class'ı sayfa yüklenmeden eklenir -->
+  <script>
+    (function () {
+      const theme = localStorage.getItem("theme");
+      if (theme === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+    })();
+  </script>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    };
+  </script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- PWA -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="manifest" href="manifest.json" />
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
+<main class="max-w-md mx-auto p-4 space-y-6">
+
+  <!-- Tema geçiş butonu -->
+  <div class="fixed top-4 right-4 z-50">
+    <button id="theme-toggle" class="text-2xl focus:outline-none transition">
+      <i id="theme-icon" class="fas fa-moon"></i>
+    </button>
+  </div>
+
+  <!-- Şehir Seçimi -->
+  <!-- <div class="mb-4">
+    <label for="city-select" class="block text-sm font-medium mb-1">Şehir Seç:</label>
+    <select id="city-select" class="w-full p-2 rounded bg-white border">
+      <option value="">Konumumu Kullan</option>
+      <option value="Ankara|39.9208|32.8541">Ankara</option>
+      <option value="İstanbul|41.0082|28.9784">İstanbul</option>
+      <option value="İzmir|38.4192|27.1287">İzmir</option>
+      <option value="Antalya|36.8841|30.7056">Antalya</option>
+    </select>
+  </div> -->
+
+  <!-- Hava Durumu -->
   <section class="bg-blue-100 dark:bg-blue-900 rounded-xl p-4 shadow">
     <div class="flex justify-between items-center mb-2">
       <h2 class="text-xl font-bold flex items-center space-x-2 dark:text-white">
@@ -10,4 +65,240 @@
     </div>
     <div id="hourly-forecast" class="mt-4 grid grid-cols-5 gap-2 text-xs text-center"></div>
   </section>
-</a>
+
+  <!-- Döviz Kurları -->
+  <section class="bg-yellow-100 dark:bg-gray-700 rounded-xl p-4 shadow">
+    <h2 class="text-xl font-bold mb-4 dark:text-white"><i class="fas fa-coins mr-2"></i>Döviz ve Altın</h2>
+    <div class="space-y-2 text-sm">
+      <div class="flex justify-between items-center">
+        <span><i class="fas fa-dollar-sign text-green-600 mr-1"></i>USD/TRY</span>
+        <span id="usd-rate">Yükleniyor...</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span><i class="fas fa-euro-sign text-blue-700 mr-1"></i>EUR/TRY</span>
+        <span id="eur-rate">Yükleniyor...</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span><i class="fas fa-coins text-yellow-700 mr-1"></i>Gram Altın</span>
+        <span id="gold-rate">Yükleniyor...</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span><i class="fas fa-circle text-yellow-600 mr-1"></i>Çeyrek</span>
+        <span id="ceyrek-rate">Yükleniyor...</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span><i class="fas fa-circle-half-stroke text-yellow-600 mr-1"></i>Yarım</span>
+        <span id="yarim-rate">Yükleniyor...</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span><i class="fas fa-circle-dot text-yellow-600 mr-1"></i>Tam</span>
+        <span id="tam-rate">Yükleniyor...</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span><i class="fas fa-star text-yellow-600 mr-1"></i>Cumhuriyet</span>
+        <span id="cumhuriyet-rate">Yükleniyor...</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span><i class="fas fa-certificate text-yellow-600 mr-1"></i>Ata</span>
+        <span id="ata-rate">Yükleniyor...</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dinamik Haberler -->
+  <section class="bg-gray-100 dark:bg-gray-800 rounded-xl p-4 shadow">
+    <h2 class="text-xl font-bold mb-4 dark:text-white"><i class="fas fa-newspaper mr-2"></i>Son Dakika</h2>
+    <div id="haberler" class="space-y-3 text-sm">
+      <p>Yükleniyor...</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- Tema geçiş scripti -->
+<script>
+  const themeToggle = document.getElementById("theme-toggle");
+  const themeIcon = document.getElementById("theme-icon");
+
+  function updateIcon() {
+    const isDark = document.documentElement.classList.contains("dark");
+    themeIcon.className = isDark ? "fas fa-sun text-yellow-400" : "fas fa-moon text-gray-800";
+  }
+
+  if (themeToggle && themeIcon) {
+    themeToggle.addEventListener("click", () => {
+      document.documentElement.classList.toggle("dark");
+      const theme = document.documentElement.classList.contains("dark") ? "dark" : "light";
+      localStorage.setItem("theme", theme);
+      updateIcon();
+    });
+
+    updateIcon();
+  }
+</script>
+
+<!-- Service Worker -->
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(reg => {
+        console.log("Service Worker kayıtlı:", reg);
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          window.location.reload();
+        });
+      })
+      .catch(err => console.error("SW hatası:", err));
+  }
+</script>
+
+<!-- Veri Çekme Scriptleri -->
+<script>
+  async function getWeather(lat, lon, cityName = "Konumunuz") {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      const temp = data.current_weather.temperature;
+      const code = data.current_weather.weathercode;
+
+      document.getElementById("location-name").innerText = cityName;
+      document.getElementById("weather").innerText = `${temp}°C ${weatherCodeToText(code)}`;
+      document.getElementById("weather-icon").innerHTML = weatherCodeToIcon(code);
+
+      getHourlyForecast(lat, lon);
+    } catch (err) {
+      console.error("Hava durumu alınamadı:", err);
+    }
+  }
+
+  async function getHourlyForecast(lat, lon) {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&timezone=auto`;
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      const now = new Date();
+      const currentHour = now.getHours();
+      const output = [];
+
+      for (let i = 0; i < 5; i++) {
+        const hourIndex = currentHour + i;
+        const hour = new Date(data.hourly.time[hourIndex]).getHours();
+        const temp = data.hourly.temperature_2m[hourIndex];
+        const code = data.hourly.weathercode[hourIndex];
+        output.push(`
+          <div>
+            <div>${hour}:00</div>
+            <div>${weatherCodeToIcon(code)}</div>
+            <div>${temp}°C</div>
+          </div>
+        `);
+      }
+
+      document.getElementById("hourly-forecast").innerHTML = output.join("");
+    } catch (err) {
+      console.error("Saatlik tahmin alınamadı:", err);
+    }
+  }
+
+  function weatherCodeToText(code) {
+    const map = {
+      0: "Güneşli", 1: "Az Bulutlu", 2: "Parçalı Bulutlu", 3: "Kapalı",
+      45: "Sisli", 51: "Çiseleme", 61: "Yağmurlu", 71: "Kar", 80: "Sağanak"
+    };
+    return map[code] || "Bilinmiyor";
+  }
+
+  function weatherCodeToIcon(code) {
+    if ([0].includes(code)) return '<i class="fas fa-sun text-yellow-400"></i>';
+    if ([1, 2].includes(code)) return '<i class="fas fa-cloud-sun text-yellow-300"></i>';
+    if ([3].includes(code)) return '<i class="fas fa-cloud text-gray-500"></i>';
+    if ([45].includes(code)) return '<i class="fas fa-smog text-gray-400"></i>';
+    if ([51].includes(code)) return '<i class="fas fa-cloud-rain text-blue-400"></i>';
+    if ([61, 80].includes(code)) return '<i class="fas fa-cloud-showers-heavy text-blue-600"></i>';
+    if ([71].includes(code)) return '<i class="fas fa-snowflake text-blue-300"></i>';
+    return '<i class="fas fa-question text-gray-400"></i>';
+  }
+
+  async function getRatesFromTruncgil() {
+    try {
+      const res = await fetch('https://finans.truncgil.com/today.json');
+      const data = await res.json();
+
+      const format = (v) => v.replace('.', '').replace(',', '.');
+
+      const render = (id, item) => {
+        const satis = parseFloat(format(item["Satış"])).toFixed(2);
+        const degisim = item["Değişim"];
+        const color = degisim.includes('-') ? 'text-red-600' : 'text-green-600';
+        document.getElementById(id).innerHTML = `${satis} <span class="${color}">${degisim}</span>`;
+      };
+
+      render("usd-rate", data.USD);
+      render("eur-rate", data.EUR);
+      render("gold-rate", data["gram-altin"]);
+      render("ceyrek-rate", data["ceyrek-altin"]);
+      render("yarim-rate", data["yarim-altin"]);
+      render("tam-rate", data["tam-altin"]);
+      render("cumhuriyet-rate", data["cumhuriyet-altini"]);
+      render("ata-rate", data["ata-altin"]);
+    } catch (err) {
+      console.error("Truncgil verisi alınamadı:", err);
+    }
+  }
+
+  async function getSonDakika() {
+    try {
+      const res = await fetch("https://kadimbilgelik.com/haber-proxy.php");
+      const data = await res.json();
+      const container = document.getElementById("haberler");
+      container.innerHTML = "";
+
+      data.slice(0, 3).forEach(haber => {
+        container.innerHTML += `
+          <div class="flex space-x-4">
+            ${haber.image ? `<img src="${haber.image}" alt="Haber görseli" class="rounded-lg w-20 h-20 object-cover" />` : ''}
+            <div class="flex-1">
+              <a href="${haber.link}" target="_blank" class="text-sm font-semibold hover:underline block">
+                ${haber.title}
+              </a>
+              <div class="text-xs text-gray-500">${new Date(haber.pubDate).toLocaleString("tr-TR")}</div>
+            </div>
+          </div>
+        `;
+      });
+    } catch (err) {
+      console.error("Haberler alınamadı:", err);
+      document.getElementById("haberler").innerHTML = "<p>Haberler alınamadı</p>";
+    }
+  }
+
+  const citySelect = document.getElementById("city-select");
+  if (citySelect) {
+    citySelect.addEventListener("change", function () {
+      const value = this.value;
+      if (!value) return getLocationAndWeather();
+      const [city, lat, lon] = value.split("|");
+      getWeather(parseFloat(lat), parseFloat(lon), city);
+    });
+  }
+
+  function getLocationAndWeather() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => getWeather(pos.coords.latitude, pos.coords.longitude),
+        () => getWeather(39.9208, 32.8541, "Ankara")
+      );
+    } else {
+      getWeather(39.9208, 32.8541, "Ankara");
+    }
+  }
+
+  window.addEventListener("load", () => {
+    getLocationAndWeather();
+    getRatesFromTruncgil();
+    getSonDakika();
+  });
+</script>
+
+</body>
+</html>
