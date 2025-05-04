@@ -113,7 +113,7 @@
     document.getElementById("route-summary").classList.remove("hidden");
   }
 
-  async function extractWeatherPointsAndShow(route, distanceMeters, durationSeconds) {
+  async function extractWeatherPointsAndShow(route, distance, duration) {
     const stepCount = Math.floor(distanceMeters / 50000);
     const coords = route.features[0].geometry.coordinates;
     const totalPoints = coords.length;
