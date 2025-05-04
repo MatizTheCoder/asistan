@@ -56,7 +56,7 @@
 </main>
 
 <script>
-  const apiKey = '5b3ce3597851110001cf6248665476b4a7b84498b22150fa85d1f538'; 
+  const apiKey = 'YOUR_API_KEY_HERE'; // ← OpenRouteService API anahtarını buraya yaz!
 
   document.getElementById("route-form").addEventListener("submit", async function (e) {
     e.preventDefault();
@@ -72,7 +72,7 @@
       const duration = route.features[0].properties.summary.duration;
 
       showSummary(distance, duration, from, to);
-      await extractWeatherPointsAndShow(route, distance);
+      await extractWeatherPointsAndShow(route, distance, duration);
     } catch (err) {
       alert("Rota alınamadı: " + err.message);
     }
@@ -120,29 +120,28 @@
     const gap = Math.floor(totalPoints / stepCount);
     const weatherContainer = document.getElementById("weather-container");
     weatherContainer.innerHTML = "";
-  
-    const startTime = new Date(); // Kullanıcının rotayı oluşturduğu an
-  
+
+    const startTime = new Date(); // Rotanın başlama zamanı
+
     for (let i = 0; i <= stepCount; i++) {
       const point = coords[i * gap];
       if (!point) continue;
-  
+
       const lon = point[0];
       const lat = point[1];
-  
-      // Her adım için tahmini süre
+
+      // Her konumun tahmini ulaşım zamanı
       const progressRatio = i / stepCount;
       const eta = new Date(startTime.getTime() + durationSeconds * 1000 * progressRatio);
       const etaHour = eta.getHours();
       const formattedTime = eta.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
-  
-      // Hava verisini alın (tahmini saatteki hava durumu)
-      const weather = await getWeatherAt(lat, lon, eta);
+
+      const weather = await getWeatherAt(lat, lon, etaHour);
       const locationName = await getLocationName(lat, lon);
-  
+
       if (weather) {
         weatherContainer.innerHTML += `
-          <div class="p-4 bg-blue-100 dark:bg-blue-900 rounded-lg shadow">
+          <div class="p-4 bg-blue-100 dark:bg-blue-900 rounded-lg shadow mb-4">
             <p><i class="fas fa-location-dot mr-1"></i><strong>Konum:</strong> ${locationName}</p>
             <p><strong>Sıcaklık:</strong> ${weather.temperature}°C</p>
             <p><strong>Durum:</strong> ${weatherCodeToText(weather.weathercode)}</p>
@@ -154,41 +153,42 @@
     }
   }
 
-
   async function getLocationName(lat, lon) {
-  try {
-    const res = await fetch(`https://api.openrouteservice.org/geocode/reverse?api_key=${apiKey}&point.lat=${lat}&point.lon=${lon}&size=1`);
-    const data = await res.json();
-    const address = data.features[0].properties;
-    return `${address.locality || address.county || address.region || 'Bilinmeyen Konum'}`;
-  } catch (err) {
-    console.error("Konum adı alınamadı:", err);
-    return `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+    try {
+      const res = await fetch(`https://api.openrouteservice.org/geocode/reverse?api_key=${apiKey}&point.lat=${lat}&point.lon=${lon}&size=1`);
+      const data = await res.json();
+      const address = data.features[0].properties;
+      return `${address.locality || address.county || address.region || 'Bilinmeyen Konum'}`;
+    } catch (err) {
+      console.error("Konum adı alınamadı:", err);
+      return `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+    }
   }
-}
 
+  async function getWeatherAt(lat, lon, hour) {
+    try {
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&timezone=auto`);
+      const data = await res.json();
 
+      const index = data.hourly.time.findIndex(t => {
+        const date = new Date(t);
+        return !isNaN(date.getTime()) && date.getHours() === hour;
+      });
 
-async function getWeatherAt(lat, lon, date) {
-  try {
-    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&timezone=auto`);
-    const data = await res.json();
+      if (index === -1) {
+        console.warn("Uygun saat dilimi bulunamadı:", hour);
+        return null;
+      }
 
-    const targetISOString = date.toISOString().slice(0, 13); // "YYYY-MM-DDTHH"
-    
-    const index = data.hourly.time.findIndex(t => t.startsWith(targetISOString));
-    if (index === -1) return null;
-
-    return {
-      temperature: data.hourly.temperature_2m[index],
-      weathercode: data.hourly.weathercode[index]
-    };
-  } catch (err) {
-    console.error("Hava durumu alınamadı:", err);
-    return null;
+      return {
+        temperature: data.hourly.temperature_2m[index],
+        weathercode: data.hourly.weathercode[index]
+      };
+    } catch (err) {
+      console.error("Hava durumu alınamadı:", err);
+      return null;
+    }
   }
-}
-
 
   function weatherCodeToText(code) {
     const map = {
@@ -209,5 +209,6 @@ async function getWeatherAt(lat, lon, date) {
     return '<i class="fas fa-question text-gray-400"></i>';
   }
 </script>
+
 </body>
 </html>
