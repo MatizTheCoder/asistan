@@ -137,7 +137,7 @@
       const formattedTime = eta.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
   
       // Hava verisini alın (tahmini saatteki hava durumu)
-      const weather = await getWeatherAt(lat, lon, etaHour);
+      const weather = await getWeatherAt(lat, lon, eta);
       const locationName = await getLocationName(lat, lon);
   
       if (weather) {
@@ -169,13 +169,14 @@
 
 
 
-async function getWeatherAt(lat, lon, hour) {
+async function getWeatherAt(lat, lon, date) {
   try {
     const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&timezone=auto`);
     const data = await res.json();
 
-    // Hedef saati bul
-    const index = data.hourly.time.findIndex(t => new Date(t).getHours() === hour);
+    const targetISOString = date.toISOString().slice(0, 13); // "YYYY-MM-DDTHH"
+    
+    const index = data.hourly.time.findIndex(t => t.startsWith(targetISOString));
     if (index === -1) return null;
 
     return {
