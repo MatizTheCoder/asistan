@@ -144,6 +144,19 @@
   }
 }
 
+  async function getLocationName(lat, lon) {
+  try {
+    const res = await fetch(`https://api.openrouteservice.org/geocode/reverse?api_key=${apiKey}&point.lat=${lat}&point.lon=${lon}&size=1`);
+    const data = await res.json();
+    const address = data.features[0].properties;
+    return `${address.locality || address.county || address.region || 'Bilinmeyen Konum'}`;
+  } catch (err) {
+    console.error("Konum adı alınamadı:", err);
+    return `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+  }
+}
+
+
 
   async function getWeatherAt(lat, lon) {
     try {
