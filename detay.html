@@ -1,17 +1,11 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Detaylı Hava Durumu</title>
 
-  <!-- Tailwind dark mode -->
-  <script>
-    tailwind.config = { darkMode: 'class' }
-  </script>
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Dark mode başlangıç kontrolü -->
+  <!-- Tema darkMode için -->
   <script>
     (function () {
       const theme = localStorage.getItem("theme");
@@ -21,72 +15,88 @@
     })();
   </script>
 
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    };
+  </script>
+
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <link rel="icon" href="icons/icon-192.png">
 </head>
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
-  <main class="max-w-md mx-auto p-4 space-y-6">
 
-    <!-- Geri Butonu -->
-    <a href="index.html" class="text-blue-500 hover:underline text-sm flex items-center">
-      <i class="fas fa-arrow-left mr-2"></i> Geri Dön
+<main class="max-w-md mx-auto p-4 space-y-6">
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-bold" id="city-name">Hava Durumu</h1>
+    <a href="index.html" class="text-sm text-blue-500 hover:underline">
+      <i class="fas fa-arrow-left mr-1"></i>Ana Sayfa
     </a>
+  </div>
 
-    <h1 class="text-2xl font-bold text-center mb-4">Detaylı Hava Durumu</h1>
+  <div class="bg-blue-100 dark:bg-blue-900 rounded-xl p-4 shadow space-y-3">
+    <div><strong>Sıcaklık:</strong> <span id="temp">-</span></div>
+    <div><strong>Rüzgar:</strong> <span id="wind">-</span></div>
+    <div><strong>Nem:</strong> <span id="humidity">-</span></div>
+    <div><strong>Basınç:</strong> <span id="pressure">-</span></div>
+    <div><strong>Hava Durumu:</strong> <span id="condition">-</span></div>
+  </div>
 
-    <div id="details" class="bg-gray-100 dark:bg-gray-800 rounded-xl p-4 shadow text-sm space-y-2">
-      <p>Yükleniyor...</p>
-    </div>
-  </main>
+  <div class="mt-6 text-center text-sm text-gray-500">
+    <i class="fas fa-cloud-sun mr-1"></i>Veriler Open-Meteo API üzerinden alınmaktadır.
+  </div>
+</main>
 
-  <script>
-    async function getWeatherDetails(lat, lon) {
-      const apiKey = "YOUR_API_KEY"; // <-- Kendi OpenWeather API anahtarını buraya yaz
-      const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=tr&appid=${apiKey}`;
+<script>
+  // URL parametrelerini al
+  const params = new URLSearchParams(window.location.search);
+  const lat = params.get('lat');
+  const lon = params.get('lon');
+  const city = decodeURIComponent(params.get('city') || 'Konum');
 
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
+  document.getElementById('city-name').innerText = `${city} - Detaylı Hava`;
 
-        const sunrise = new Date(data.sys.sunrise * 1000).toLocaleTimeString('tr-TR');
-        const sunset = new Date(data.sys.sunset * 1000).toLocaleTimeString('tr-TR');
+  async function fetchWeatherDetails() {
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,pressure_msl,windspeed_10m,weathercode&timezone=auto`;
+      const res = await fetch(url);
+      const data = await res.json();
 
-        const html = `
-          <div><strong>Konum:</strong> ${data.name || "Bilinmiyor"}</div>
-          <div><strong>Açıklama:</strong> ${data.weather[0].description}</div>
-          <div><strong>Sıcaklık:</strong> ${data.main.temp}°C</div>
-          <div><strong>Hissedilen:</strong> ${data.main.feels_like}°C</div>
-          <div><strong>Nem:</strong> ${data.main.humidity}%</div>
-          <div><strong>Basınç:</strong> ${data.main.pressure} hPa</div>
-          <div><strong>Rüzgar:</strong> ${data.wind.speed} m/sn, yön: ${data.wind.deg}°</div>
-          <div><strong>Görüş Mesafesi:</strong> ${data.visibility / 1000} km</div>
-          <div><strong>Bulutluluk:</strong> ${data.clouds.all}%</div>
-          <div><strong>Gün Doğumu:</strong> ${sunrise}</div>
-          <div><strong>Gün Batımı:</strong> ${sunset}</div>
-        `;
+      const temp = data.current_weather.temperature;
+      const wind = data.current_weather.windspeed;
+      const code = data.current_weather.weathercode;
 
-        document.getElementById("details").innerHTML = html;
+      const now = new Date();
+      const hourIndex = data.hourly.time.findIndex(t => new Date(t).getHours() === now.getHours());
 
-      } catch (error) {
-        document.getElementById("details").innerHTML = "<p>Veriler alınamadı.</p>";
-        console.error("Detay verileri alınamadı:", error);
-      }
+      const humidity = data.hourly.relative_humidity_2m[hourIndex];
+      const pressure = data.hourly.pressure_msl[hourIndex];
+
+      document.getElementById('temp').innerText = `${temp}°C`;
+      document.getElementById('wind').innerText = `${wind} km/h`;
+      document.getElementById('humidity').innerText = `${humidity}%`;
+      document.getElementById('pressure').innerText = `${pressure} hPa`;
+      document.getElementById('condition').innerText = weatherCodeToText(code);
+
+    } catch (err) {
+      console.error("Detaylı hava verisi alınamadı:", err);
     }
+  }
 
-    function getQueryParams() {
-      const params = new URLSearchParams(window.location.search);
-      return {
-        lat: params.get("lat"),
-        lon: params.get("lon")
-      };
-    }
+  function weatherCodeToText(code) {
+    const map = {
+      0: "Güneşli", 1: "Az Bulutlu", 2: "Parçalı Bulutlu", 3: "Kapalı",
+      45: "Sisli", 51: "Çiseleme", 61: "Yağmurlu", 71: "Kar", 80: "Sağanak"
+    };
+    return map[code] || "Bilinmiyor";
+  }
 
-    const { lat, lon } = getQueryParams();
-    if (lat && lon) {
-      getWeatherDetails(lat, lon);
-    } else {
-      document.getElementById("details").innerHTML = "<p>Konum bilgisi bulunamadı.</p>";
-    }
-  </script>
+  fetchWeatherDetails();
+</script>
+
 </body>
 </html>
