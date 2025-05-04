@@ -169,6 +169,10 @@
       document.getElementById("weather-icon").innerHTML = weatherCodeToIcon(code);
 
       getHourlyForecast(lat, lon);
+
+      
+      document.getElementById("weather-card-link").href = 
+      `detay.html?lat=${lat}&lon=${lon}&city=${encodeURIComponent(cityName)}`;
     } catch (err) {
       console.error("Hava durumu alınamadı:", err);
     }
@@ -195,10 +199,7 @@
             <div>${temp}°C</div>
           </div>
         `);
-      }
-      
-  document.getElementById("weather-card-link").href = 
-  `detay.html?lat=${lat}&lon=${lon}&city=${encodeURIComponent(cityName)}`;
+      }     
 
 
       document.getElementById("hourly-forecast").innerHTML = output.join("");
