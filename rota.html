@@ -114,33 +114,36 @@
   }
 
   async function extractWeatherPointsAndShow(route, distanceMeters) {
-    const stepCount = Math.floor(distanceMeters / 50000);
-    const coords = route.features[0].geometry.coordinates;
-    const totalPoints = coords.length;
-    const gap = Math.floor(totalPoints / stepCount);
-    const weatherContainer = document.getElementById("weather-container");
-    weatherContainer.innerHTML = "";
+  const stepCount = Math.floor(distanceMeters / 50000);
+  const coords = route.features[0].geometry.coordinates;
+  const totalPoints = coords.length;
+  const gap = Math.floor(totalPoints / stepCount);
+  const weatherContainer = document.getElementById("weather-container");
+  weatherContainer.innerHTML = "";
 
-    for (let i = 0; i <= stepCount; i++) {
-      const point = coords[i * gap];
-      if (!point) continue;
+  for (let i = 0; i <= stepCount; i++) {
+    const point = coords[i * gap];
+    if (!point) continue;
 
-      const lon = point[0];
-      const lat = point[1];
+    const lon = point[0];
+    const lat = point[1];
 
-      const weather = await getWeatherAt(lat, lon);
-      if (weather) {
-        weatherContainer.innerHTML += `
-          <div class="p-4 bg-blue-100 dark:bg-blue-900 rounded-lg shadow">
-            <p><i class="fas fa-location-dot mr-1"></i><strong>Konum:</strong> ${lat.toFixed(2)}, ${lon.toFixed(2)}</p>
-            <p><strong>Sıcaklık:</strong> ${weather.temperature}°C</p>
-            <p><strong>Durum:</strong> ${weatherCodeToText(weather.weathercode)}</p>
-            <div class="text-2xl mt-2">${weatherCodeToIcon(weather.weathercode)}</div>
-          </div>
-        `;
-      }
+    const weather = await getWeatherAt(lat, lon);
+    const locationName = await getLocationName(lat, lon);
+
+    if (weather) {
+      weatherContainer.innerHTML += `
+        <div class="p-4 bg-blue-100 dark:bg-blue-900 rounded-lg shadow">
+          <p><i class="fas fa-location-dot mr-1"></i><strong>Konum:</strong> ${locationName}</p>
+          <p><strong>Sıcaklık:</strong> ${weather.temperature}°C</p>
+          <p><strong>Durum:</strong> ${weatherCodeToText(weather.weathercode)}</p>
+          <div class="text-2xl mt-2">${weatherCodeToIcon(weather.weathercode)}</div>
+        </div>
+      `;
     }
   }
+}
+
 
   async function getWeatherAt(lat, lon) {
     try {
