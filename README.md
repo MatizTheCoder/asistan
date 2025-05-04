@@ -29,16 +29,6 @@ A **Progressive Web App (PWA)** combining **live weather**, **currency rates**, 
 
 ---
 
-## 📷 Screenshots
-
-### 🌤 Main Page
-<img src="https://raw.githubusercontent.com/MatizTheCoder/asistan/main/screenshots/main.png" width="300"/>
-
-### 🛣️ Route Planner
-<img src="https://raw.githubusercontent.com/MatizTheCoder/asistan/main/screenshots/route.png" width="300"/>
-
----
-
 ## 🚀 Getting Started
 
 > You can use the code as you like — this was built for **personal needs**, but feel free to fork, modify, and extend.
