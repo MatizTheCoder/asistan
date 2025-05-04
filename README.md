@@ -1,4 +1,4 @@
-# 🌤 Türkiye Gündemi - PWA Assistant
+# 🌤 PWA Assistant
 
 A **Progressive Web App (PWA)** combining **live weather**, **currency rates**, and **breaking news** for personal daily use. Built with simplicity and performance in mind using **free APIs** and modern web technologies.
 
