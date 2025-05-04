@@ -196,15 +196,16 @@
           </div>
         `);
       }
+      
+  document.getElementById("weather-card-link").href = 
+  `detay.html?lat=${lat}&lon=${lon}&city=${encodeURIComponent(cityName)}`;
+
 
       document.getElementById("hourly-forecast").innerHTML = output.join("");
     } catch (err) {
       console.error("Saatlik tahmin alınamadı:", err);
     }
   }
-
-  document.getElementById("weather-card-link").href = 
-  `detay.html?lat=${lat}&lon=${lon}&city=${encodeURIComponent(cityName)}`;
 
 
   function weatherCodeToText(code) {
