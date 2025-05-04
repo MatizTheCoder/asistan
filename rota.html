@@ -61,7 +61,7 @@ form.addEventListener("submit", async (e) => {
   const end = [parseFloat(coords[1][0].lat), parseFloat(coords[1][0].lon)];
 
   // 📡 Rota API
-  const orsUrl = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=YOUR_API_KEY`;
+  const orsUrl = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf6248665476b4a7b84498b22150fa85d1f538`;
   const res = await fetch(orsUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
