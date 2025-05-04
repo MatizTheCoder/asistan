@@ -176,38 +176,28 @@
 
 <!-- Veri Çekme Scriptleri -->
 <script>
-  async function getWeather(lat, lon, cityName = "Konumunuz") {
+
+  <!-- Hava Durumu -->
+<script>
+  function getWeather(lat, lon, cityName = "Konumunuz") {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
+    fetch(url).then(res => res.json()).then(data => {
       const temp = data.current_weather.temperature;
       const code = data.current_weather.weathercode;
-
       document.getElementById("location-name").innerText = cityName;
       document.getElementById("weather").innerText = `${temp}°C ${weatherCodeToText(code)}`;
       document.getElementById("weather-icon").innerHTML = weatherCodeToIcon(code);
-
+      document.getElementById("weather-card-link").href = `detay.html?lat=${lat}&lon=${lon}&city=${encodeURIComponent(cityName)}`;
       getHourlyForecast(lat, lon);
-    } catch (err) {
-      console.error("Hava durumu alınamadı:", err);
-    }
-
-    // Şehir adı boş değilse detay sayfası linkine koordinatları ekleyelim
-document.getElementById("weather-card-link").href =
-  `detay.html?lat=${lat}&lon=${lon}&city=${encodeURIComponent(cityName)}`;
-
+    }).catch(err => console.error("Hava durumu alınamadı:", err));
   }
 
-  async function getHourlyForecast(lat, lon) {
+  function getHourlyForecast(lat, lon) {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&timezone=auto`;
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
+    fetch(url).then(res => res.json()).then(data => {
       const now = new Date();
       const currentHour = now.getHours();
       const output = [];
-
       for (let i = 0; i < 5; i++) {
         const hourIndex = currentHour + i;
         const hour = new Date(data.hourly.time[hourIndex]).getHours();
@@ -221,11 +211,8 @@ document.getElementById("weather-card-link").href =
           </div>
         `);
       }
-
       document.getElementById("hourly-forecast").innerHTML = output.join("");
-    } catch (err) {
-      console.error("Saatlik tahmin alınamadı:", err);
-    }
+    }).catch(err => console.error("Saatlik tahmin alınamadı:", err));
   }
 
   function weatherCodeToText(code) {
@@ -237,16 +224,21 @@ document.getElementById("weather-card-link").href =
   }
 
   function weatherCodeToIcon(code) {
-    if ([0].includes(code)) return '<i class="fas fa-sun text-yellow-400"></i>';
+    if (code === 0) return '<i class="fas fa-sun text-yellow-400"></i>';
     if ([1, 2].includes(code)) return '<i class="fas fa-cloud-sun text-yellow-300"></i>';
-    if ([3].includes(code)) return '<i class="fas fa-cloud text-gray-500"></i>';
-    if ([45].includes(code)) return '<i class="fas fa-smog text-gray-400"></i>';
-    if ([51].includes(code)) return '<i class="fas fa-cloud-rain text-blue-400"></i>';
+    if (code === 3) return '<i class="fas fa-cloud text-gray-500"></i>';
+    if (code === 45) return '<i class="fas fa-smog text-gray-400"></i>';
+    if (code === 51) return '<i class="fas fa-cloud-rain text-blue-400"></i>';
     if ([61, 80].includes(code)) return '<i class="fas fa-cloud-showers-heavy text-blue-600"></i>';
-    if ([71].includes(code)) return '<i class="fas fa-snowflake text-blue-300"></i>';
+    if (code === 71) return '<i class="fas fa-snowflake text-blue-300"></i>';
     return '<i class="fas fa-question text-gray-400"></i>';
   }
 
+  navigator.geolocation.getCurrentPosition(
+    pos => getWeather(pos.coords.latitude, pos.coords.longitude),
+    () => getWeather(39.9208, 32.8541, "Ankara")
+  );
+</script>
   async function getRatesFromTruncgil() {
     try {
       const res = await fetch('https://finans.truncgil.com/today.json');
@@ -309,27 +301,6 @@ document.getElementById("weather-card-link").href =
       getWeather(parseFloat(lat), parseFloat(lon), city);
     });
   }
-
-function getLocationAndWeather() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        getWeather(lat, lon);
-      },
-      () => {
-        const lat = 39.9208;
-        const lon = 32.8541;
-        getWeather(lat, lon, "Ankara");
-      }
-    );
-  } else {
-    const lat = 39.9208;
-    const lon = 32.8541;
-    getWeather(lat, lon, "Ankara");
-  }
-}
 
 
 </script>
