@@ -1,6 +1,6 @@
 {
-    "name": "Türkiye Gündemi",
-    "short_name": "Gündem",
+    "name": "Akıllı Asistan",
+    "short_name": "Asistan",
     "start_url": "index.html",
     "display": "standalone",
     "background_color": "#ffffff",
