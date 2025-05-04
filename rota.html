@@ -113,36 +113,47 @@
     document.getElementById("route-summary").classList.remove("hidden");
   }
 
-  async function extractWeatherPointsAndShow(route, distanceMeters) {
-  const stepCount = Math.floor(distanceMeters / 50000);
-  const coords = route.features[0].geometry.coordinates;
-  const totalPoints = coords.length;
-  const gap = Math.floor(totalPoints / stepCount);
-  const weatherContainer = document.getElementById("weather-container");
-  weatherContainer.innerHTML = "";
-
-  for (let i = 0; i <= stepCount; i++) {
-    const point = coords[i * gap];
-    if (!point) continue;
-
-    const lon = point[0];
-    const lat = point[1];
-
-    const weather = await getWeatherAt(lat, lon);
-    const locationName = await getLocationName(lat, lon);
-
-    if (weather) {
-      weatherContainer.innerHTML += `
-        <div class="p-4 bg-blue-100 dark:bg-blue-900 rounded-lg shadow">
-          <p><i class="fas fa-location-dot mr-1"></i><strong>Konum:</strong> ${locationName}</p>
-          <p><strong>Sıcaklık:</strong> ${weather.temperature}°C</p>
-          <p><strong>Durum:</strong> ${weatherCodeToText(weather.weathercode)}</p>
-          <div class="text-2xl mt-2">${weatherCodeToIcon(weather.weathercode)}</div>
-        </div>
-      `;
+  async function extractWeatherPointsAndShow(route, distanceMeters, durationSeconds) {
+    const stepCount = Math.floor(distanceMeters / 50000);
+    const coords = route.features[0].geometry.coordinates;
+    const totalPoints = coords.length;
+    const gap = Math.floor(totalPoints / stepCount);
+    const weatherContainer = document.getElementById("weather-container");
+    weatherContainer.innerHTML = "";
+  
+    const startTime = new Date(); // Kullanıcının rotayı oluşturduğu an
+  
+    for (let i = 0; i <= stepCount; i++) {
+      const point = coords[i * gap];
+      if (!point) continue;
+  
+      const lon = point[0];
+      const lat = point[1];
+  
+      // Her adım için tahmini süre
+      const progressRatio = i / stepCount;
+      const eta = new Date(startTime.getTime() + durationSeconds * 1000 * progressRatio);
+      const etaHour = eta.getHours();
+      const formattedTime = eta.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+  
+      // Hava verisini alın (tahmini saatteki hava durumu)
+      const weather = await getWeatherAt(lat, lon, etaHour);
+      const locationName = await getLocationName(lat, lon);
+  
+      if (weather) {
+        weatherContainer.innerHTML += `
+          <div class="p-4 bg-blue-100 dark:bg-blue-900 rounded-lg shadow">
+            <p><i class="fas fa-location-dot mr-1"></i><strong>Konum:</strong> ${locationName}</p>
+            <p><strong>Sıcaklık:</strong> ${weather.temperature}°C</p>
+            <p><strong>Durum:</strong> ${weatherCodeToText(weather.weathercode)}</p>
+            <p><strong>Tahmini Saat:</strong> ${formattedTime}</p>
+            <div class="text-2xl mt-2">${weatherCodeToIcon(weather.weathercode)}</div>
+          </div>
+        `;
+      }
     }
   }
-}
+
 
   async function getLocationName(lat, lon) {
   try {
@@ -158,17 +169,25 @@
 
 
 
-  async function getWeatherAt(lat, lon) {
-    try {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
-      const res = await fetch(url);
-      const data = await res.json();
-      return data.current_weather;
-    } catch (err) {
-      console.error("Hava verisi alınamadı:", err);
-      return null;
-    }
+async function getWeatherAt(lat, lon, hour) {
+  try {
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,weathercode&timezone=auto`);
+    const data = await res.json();
+
+    // Hedef saati bul
+    const index = data.hourly.time.findIndex(t => new Date(t).getHours() === hour);
+    if (index === -1) return null;
+
+    return {
+      temperature: data.hourly.temperature_2m[index],
+      weathercode: data.hourly.weathercode[index]
+    };
+  } catch (err) {
+    console.error("Hava durumu alınamadı:", err);
+    return null;
   }
+}
+
 
   function weatherCodeToText(code) {
     const map = {
